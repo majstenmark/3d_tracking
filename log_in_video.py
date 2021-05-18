@@ -36,10 +36,10 @@ import camera_data
 def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('-v', '--video', required=True, action='store', default='.', help="video file")
-    parser.add_argument('-ov', '--out_video', required=True, action='store', default='.', help="video file")
+    parser.add_argument('-o', '--out_video', required=True, action='store', default='.', help="video file")
     
     parser.add_argument('-cd', '--camera_data', required=True, action='store', default='.', help="camera data")
-    parser.add_argument('-of', '--out_file', required=True, action='store', default='.', help="Out file")
+    parser.add_argument('-l', '--log', required=True, action='store', default='.', help="log file")
     parser.add_argument('-m', '--min', required=False, action='store', default='1', help="Out file")
     
     return parser.parse_args()
@@ -68,6 +68,8 @@ def process(file, out_video, camera_data_file, log, minSeen = 1):
     fps = cap.get(cv2.CAP_PROP_FPS)
     frametot = int(cap.get(cv2.CAP_PROP_FRAME_COUNT)+ 0.5)
     codec = 'mjpg'
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    guess = False
     if out_video != '':
         out = cv2.VideoWriter('./' + out_video, cv2.VideoWriter_fourcc(*codec), fps, (width, height))
     size = (width, height)
@@ -92,26 +94,31 @@ def process(file, out_video, camera_data_file, log, minSeen = 1):
             points3d = []
             crns = []
             frameno = cap.get(cv2.CAP_PROP_POS_FRAMES)
-            print('Frame {}/{}'.format(frameno, frametot))
+
+            n = 0
+
             if ids is None:
+                
                 cv2.imshow('frame',marked)
                 key = cv2.waitKey(1)
+                guess = False
+                rvec = np.array([0., 0., 0.])
+                tvec = np.array([0., 0., 0.])
 
                 if out_video != '': out.write(marked)
                 if key == ord('q'):
                     break
-                continue
-            n = 0
-            for index, id in enumerate(ids): 
-                if id[0] in model_corners:
-                    n += 1
-                    for corner in model_corners[id[0]]:
-                        points3d.append(corner)
-                    for corner_list in corners[index]:
-                        for corner in corner_list:
-                            crns.append(corner)
+            else:
+                for index, id in enumerate(ids): 
+                    if id[0] in model_corners:
+                        n += 1
+                        for corner in model_corners[id[0]]:
+                            points3d.append(corner)
+                        for corner_list in corners[index]:
+                            for corner in corner_list:
+                                crns.append(corner)
 
-                        logfile.write('{} {} {} {} {} {}\n'.format(frameno, id[0], corner_list[0], corner_list[1], corner_list[2], corner_list[3]))
+                            logfile.write('{} {} {} {} {} {}\n'.format(frameno, id[0], corner_list[0], corner_list[1], corner_list[2], corner_list[3]))
                 
                 
             if n >= minSeen:
@@ -120,14 +127,13 @@ def process(file, out_video, camera_data_file, log, minSeen = 1):
                 assert(max(pts3d.shape) == 4 * n)
                 assert(max(corners.shape) == 4* n)
                 
-                ret = cv2.solvePnP(pts3d, corners, camera_matrix, dist_coeffs, rvec, tvec, useExtrinsicGuess = True)
+                ret = cv2.solvePnP(pts3d, corners, camera_matrix, dist_coeffs, rvec, tvec, useExtrinsicGuess = guess)
                 proj, jac = cv2.projectPoints(axis, rvec, tvec, camera_matrix, dist_coeffs)
                 #positions.append((rvec, tvec))
                 logfile.write('{} {} {} {} {} {} {} {}\n'.format(frameno, 10, rvec[0], rvec[1], rvec[2], tvec[0], tvec[1], tvec[2]))
-                img = drawcenter(marked, proj)
+                marked = drawcenter(marked, proj)
+                guess = True
                 
-                cv2.imshow('frame',img)
-                if out_video != '': out.write(img)
                 
                 key = cv2.waitKey(1)
 
@@ -135,6 +141,35 @@ def process(file, out_video, camera_data_file, log, minSeen = 1):
                     break
                 if key == ord('p'):
                     key = cv2.waitKey(0) #wait until any key is pressed
+            elif n>0:
+                pts3d = np.array(points3d)
+                corners = np.array(crns).reshape(4 * n , 2)
+                assert(max(pts3d.shape) == 4 * n)
+                assert(max(corners.shape) == 4* n)
+                
+                ret = cv2.solvePnP(pts3d, corners, camera_matrix, dist_coeffs, rvec, tvec, useExtrinsicGuess = guess)
+                proj, jac = cv2.projectPoints(axis, rvec, tvec, camera_matrix, dist_coeffs)
+                #positions.append((rvec, tvec))
+                marked = drawcenter(marked, proj)
+                guess = True
+                
+                
+           
+            else:
+                guess = False
+                rvec = np.array([0., 0., 0.])
+                tvec = np.array([0., 0., 0.])
+
+            cv2.putText(marked,f'{int(frameno)}/{frametot}',(8,25), font, 0.7, (255, 255, 255), 1, cv2.LINE_AA)
+
+            cv2.imshow('frame',marked)
+            if out_video != '': out.write(marked)
+            key = cv2.waitKey(1)
+
+            if key == ord('q'):
+                break
+            if key == ord('p'):
+                key = cv2.waitKey(0) #wait until any key is pressed
 
         # Release everything if job is finished
         cap.release()
@@ -145,7 +180,7 @@ def main():
     
     camera_data = args.camera_data
     out_video = args.out_video
-    log = args.out_file
+    log = args.log
     mn = int(args.min)  
     process(args.video,out_video, camera_data, log, mn)
 
