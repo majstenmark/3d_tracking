@@ -17,14 +17,6 @@
 import numpy as np
 import cv2
 import cv2.aruco as aruco
-import sksurgerycore.transforms.matrix as matrix
-import sksurgerycalibration.algorithms.pivot as pivot
-from transforms3d.affines import compose
-from transforms3d.euler import (euler2mat, mat2euler, euler2quat, quat2euler,
-                     euler2axangle, axangle2euler, EulerFuncs)
-from mpl_toolkits.mplot3d import proj3d
-from scipy.spatial.transform import Rotation as R
-from transforms3d.affines import compose
 import math
 import warnings
 from cad_model import model, model_corners
