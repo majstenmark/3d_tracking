@@ -37,7 +37,7 @@ def get_args():
     parser.add_argument('-sz', '--interval_size', required=True, action='store', default='250', help="number of frames in interval")
     return parser.parse_args()
 
-def readlog(log, CENTID):
+def readlog2(log, CENTID):
     cent_pos = {}
     frames = []
     # Define the codec and create VideoWriter object
@@ -69,7 +69,7 @@ def readlog(log, CENTID):
 args = get_args()
 logfile = args.log
 interval_size = int(args.interval_size)
-positions, framenos = readlog(logfile, 10)
+positions, framenos = readlog2(logfile, 10)
 
 L = len(framenos)
 data = np.empty((3, L))
