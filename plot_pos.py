@@ -99,6 +99,7 @@ def update_lines(num, data, line):
     start = fromindex[num]
     line.set_data(data[0:2, start:num])
     line.set_3d_properties(data[2, start:num])
+    print(f'Num {num}')
     return line,
 
 # Attaching 3D axis to the figure
@@ -115,7 +116,7 @@ ax.set_xlabel('X')
 ax.set_ylabel('Y')
 ax.set_zlabel('Z')
 
-ax.set_title('3D Test')
+ax.set_title('3D Plot')
 
 # Creating the Animation object
 line_ani = animation.FuncAnimation(fig, update_lines, frames=np.linspace(0, len(framenos)-1, len(framenos)), fargs=(data, line),
