@@ -88,8 +88,9 @@ def write_labels(label_log):
 
 
 def label(video, visibility_log, label_log):
+
     def convert(n): return int(n)
-    visible = list(map(convert, open(visibility_log, 'r').readlines()))
+    visible = list(map(convert, open(visibility_log, 'r+').readlines()))
     
     cap = cv2.VideoCapture(video)
     frametot = int(cap.get(cv2.CAP_PROP_FRAME_COUNT)+ 0.5)
@@ -128,6 +129,7 @@ def main():
     
     video = args.video
     visibility_log = args.log
+    
     label_log = args.labels
     label(video, visibility_log, label_log)
 

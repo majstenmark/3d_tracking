@@ -1,19 +1,24 @@
 import numpy as np
+import sys
+sys.path.append('..')
 import cv2
 import cv2.aruco as aruco
-import sksurgerycore.transforms.matrix as matrix
-import sksurgerycalibration.algorithms.pivot as pivot
-from transforms3d.affines import compose
-from transforms3d.euler import (euler2mat, mat2euler, euler2quat, quat2euler,
-                     euler2axangle, axangle2euler, EulerFuncs)
-from mpl_toolkits.mplot3d import proj3d
-from scipy.spatial.transform import Rotation as R
-from transforms3d.affines import compose
-import math
-import warnings
-from cad_model import model, model_corners
 import camera_data
+import argparse
 
+
+def get_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-v', '--video', required=True, action='store', default='.', help="Video to analyze")
+    parser.add_argument('-o', '--out_video', required=True, action='store', default='.', help="output video")
+    parser.add_argument('-cd', '--camera_data', required=True, action='store', default='.', help="yaml file with camera calibration")
+    
+    parser.add_argument('-l', '--log', required=True, action='store', default='log.txt', help="Visibility log")
+    parser.add_argument('-s', '--show', required=False, action='store', default='True', help="Visibility log")
+    
+
+
+    return parser.parse_args()
 
 def drawcenter(img, imgpts):
     corner = tuple(map(int, imgpts[0].ravel()))
@@ -29,10 +34,10 @@ def far_off(p):
             return True
     return False
 
-def process(file, out_video, log_file):
+def process(file, camera_data_file, out_video, log_file, show):
 
     markerlength = 10
-    camera_matrix, dist_coeffs = camera_data.sony_data()
+    camera_matrix, dist_coeffs = camera_data.get_data(camera_data_file)
 
     aruco_dict = aruco.Dictionary_get(aruco.DICT_4X4_50)#Aruco marker size 4x4 (+ border)
     parameters =  aruco.DetectorParameters_create()
@@ -83,16 +88,17 @@ def process(file, out_video, log_file):
         cv2.putText(marked,f'{frameno}/{frametot}',(8,25), font, 0.7, (255, 255, 255), 1, cv2.LINE_AA)
         out.write(marked)
 
-        #cv2.imshow('frame',marked)
+        
         if frameno % 100 == 0:
             print(f'{frameno}/{frametot}')
         
         #out.write(marked)
-        '''
-        key = cv2.waitKey(1)
-        if key == ord('q'):
-            break
-        '''
+        if show:
+            cv2.imshow('frame',marked)
+            key = cv2.waitKey(1)
+            if key == ord('q'):
+                break
+        
         if ids is None:
             continue
         n = 0
@@ -117,11 +123,14 @@ def process(file, out_video, log_file):
     cv2.destroyAllWindows()
 
 def main():
-    FILE = '/Users/maj/Movies/Tracking/Case 1. Tracking - Superior Sinus Venosus ASD PAPVD Repair 20200511 TPK/ANV/ASD_PAPVD_25fps_trimmed.mp4'
-    OUT_FILE = '/Users/maj/repos/tracker/OP_analysis/Visibility_analysis_trimmed_videos/ASD_PAPVD_tracked.mp4'
-    LOG_FILE = '/Users/maj/repos/tracker/OP_analysis/Visibility_analysis_trimmed_videos/ASD_PAPVD_25fps_visibility_log.txt'
+    args = get_args()
+    FILE = args.video
+    OUT_FILE = args.out_video
+    LOG_FILE = args.log
+    SHOW = args.show
+    CAMERA_DATA = args.camera_data
 
-    process(FILE, OUT_FILE, LOG_FILE)
+    process(FILE, CAMERA_DATA, OUT_FILE, LOG_FILE, SHOW)
 
 if __name__ == '__main__':
     main()
