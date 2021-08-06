@@ -127,7 +127,8 @@ def main():
     FILE = args.video
     OUT_FILE = args.out_video
     LOG_FILE = args.log
-    SHOW = args.show
+    SHOW = False if args.show.lower() == 'false' else True
+
     CAMERA_DATA = args.camera_data
 
     process(FILE, CAMERA_DATA, OUT_FILE, LOG_FILE, SHOW)
