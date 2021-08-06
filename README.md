@@ -5,6 +5,13 @@
 
 <img src="figures/die.png" alt="3D die" width="200"/>
 
+## Installation
+1. Install python3 on your system.
+2. Install the dependencies (either run [install.sh](install.sh)) or manually:
+```
+python3 -m pip install numpy opencv-python opencv-contrib-python argparse transforms3d scikit-spatial pyquaternion matplotlib
+```
+
 ## Camera calibration
 1. Print the [CalibrationGrid.png](calibration/CalibrationGrid.png)
 2. Take at least 10 sharp images of the grid from different angles. 
@@ -65,8 +72,15 @@ The script has three arguemtns:
 - The log file from step 1: -l, --log
 - The output file for the labels: -r, --labels
 ```
-python3 lables.py -v <marked_video> -l <log> -r <result_labels>
+python3 label.py -v <marked_video> -l <log> -r <result_labels>
 ```
+The first two images are labeled correctly (seen and unseen), the last is incorrecly labeled as not seen and should be relabeled by the user (with __W__).
+
+<img src="figures/true_pos.png" alt="True positive" width="300" />
+
+<img src="figures/true_neg.png" alt="True negative" width="300"/>
+
+<img src="figures/false_neg.png" alt="False negative" width="300"/>
 
 2. The script [calc_f1_score.py](F1_score/calc_f1_score.py) calculates the precision, recall and F1 score from the result label file (the only argument).
 ```
