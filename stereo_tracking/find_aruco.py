@@ -8,8 +8,7 @@ import glob
 import calibration_data
 import tracking_die
 from collections import defaultdict as dd
-from scipy.spatial.transform import Rotation
-from transforms3d.affines import compose, decompose
+from scipy.spatial.transform import Rotation 
 
 
 cv_file = cv.FileStorage()
@@ -122,10 +121,12 @@ def stereo_test(L, R, projL, projR):
     
     markermat = tracking_die.create_mat(real3d[ids[0]])
 
-    markerpos, markerrot, _, _ = decompose(markermat)
+    markerrot = markermat[0:3, 0:3]
+    markerpos = markermat[0:3, 3]
     tvecmarker = markerpos
     rotmatmarker = Rotation.from_matrix(markerrot)
     rvecmarker = rotmatmarker.as_rotvec()
+   
 
 
     
