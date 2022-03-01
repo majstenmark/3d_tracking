@@ -59,6 +59,7 @@ def process(file, out_video, camera_data_file, log, minSeen = 1):
     height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT) + 0.5)
     fps = cap.get(cv2.CAP_PROP_FPS)
     frametot = int(cap.get(cv2.CAP_PROP_FRAME_COUNT)+ 0.5)
+    
     codec = 'mjpg'
     font = cv2.FONT_HERSHEY_SIMPLEX
     guess = False
@@ -166,6 +167,7 @@ def process(file, out_video, camera_data_file, log, minSeen = 1):
         # Release everything if job is finished
         cap.release()
         cv2.destroyAllWindows()
+        print(f'Total no frames in {file} is {frametot}')
 
 def main():
     args = get_args()

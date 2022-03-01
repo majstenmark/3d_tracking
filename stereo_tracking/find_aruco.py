@@ -149,7 +149,7 @@ def stereo_test(L, R, projL, projR):
 
 
             # Hit "q" to close the window
-    if cv.waitKey(0) & 0xFF == ord('q'):
+    if cv.waitKey(0) & 0xFF == ord('q'): 
         exit()
 
 
